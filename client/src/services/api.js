@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://192.168.137.1:5000/api' || 'http://localhost:5000/api',
+  baseURL: process.env.REACT_APP_API_URL,
 });
 
 // Attach token to every request if user is logged in
