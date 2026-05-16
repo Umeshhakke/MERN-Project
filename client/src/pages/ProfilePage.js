@@ -17,7 +17,7 @@ const ProfilePage = () => {
 
   // New: view mode and selected meme index
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'feed'
-  const [selectedMemeIndex, setSelectedMemeIndex] = useState(0);
+  // const [selectedMemeIndex, setSelectedMemeIndex] = useState(0);
 
   const fetchUserMemes = useCallback(async () => {
     if (!user) return;
@@ -69,8 +69,8 @@ const ProfilePage = () => {
   };
 
   // Handle grid item click → switch to feed view, set index
-  const handleGridItemClick = (index) => {
-    setSelectedMemeIndex(index);
+  const handleGridItemClick = () => {
+    // setSelectedMemeIndex(index);
     setViewMode('feed');
   };
 
