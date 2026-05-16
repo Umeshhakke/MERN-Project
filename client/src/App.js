@@ -9,14 +9,17 @@ import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import UploadPage from './pages/UploadPage';
 import MainLayout from './components/MainLayout';
-
+import UserProfilePage from './pages/UserProfilePage';
+import { SocketProvider } from './context/SocketContext';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Toaster position="top-center" />
-        <AppRoutes />
-      </Router>
+      <SocketProvider>
+        <Router>
+          <Toaster position="top-center" />
+          <AppRoutes />
+        </Router>
+      </SocketProvider>
     </AuthProvider>
   );
 }
@@ -39,7 +42,9 @@ const AppRoutes = () => {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/upload" element={<UploadPage />} />
       </Route>
+      <Route path="/profile/:id" element={<UserProfilePage />} />
     </Routes>
+    
   );
 };
 

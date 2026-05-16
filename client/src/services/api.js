@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://192.168.137.1:5000/api',
+  baseURL: 'http://192.168.137.1:5000/api' || 'http://localhost:5000/api',
 });
 
 // Attach token to every request if user is logged in
@@ -75,5 +75,54 @@ export const updateProfile = async (formData) => {
   const { data } = await API.put('/auth/profile', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+  return data;
+};
+
+// User profile & follow
+export const getUserProfile = async (userId) => {
+  const { data } = await API.get(`/users/${userId}`);
+  return data;
+};
+
+export const getUsers = async () => {
+  const { data } = await API.get('/users');
+  return data;
+};
+
+export const followUser = async (userId) => {
+  const { data } = await API.put(`/users/${userId}/follow`);
+  return data;
+};
+
+export const unfollowUser = async (userId) => {
+  const { data } = await API.put(`/users/${userId}/unfollow`);
+  return data;
+};
+
+export const getFollowers = async (userId) => {
+  const { data } = await API.get(`/users/${userId}/followers`);
+  return data;
+};
+
+export const getFollowing = async (userId) => {
+  const { data } = await API.get(`/users/${userId}/following`);
+  return data;
+};
+export const isFollowingUser = async (userId) => {
+  const { data } = await API.get(`/users/${userId}/isfollowing`);
+  return data;
+};
+export const getConversations = async () => {
+  const { data } = await API.get('/chat/conversations');
+  return data;
+};
+
+export const getMessages = async (userId) => {
+  const { data } = await API.get(`/chat/${userId}`);
+  return data;
+};
+
+export const sendMessage = async (userId, text) => {
+  const { data } = await API.post(`/chat/${userId}`, { text });
   return data;
 };

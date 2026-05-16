@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/Navbar';   // ✅ import
 import FeedPage from './FeedPage';
 import SearchPage from './SearchPage';
 import ChatPage from './ChatPage';
@@ -22,11 +23,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Minimal top bar – only branding, no upload button */}
-      <header className="bg-white shadow-sm p-3 flex justify-between items-center sticky top-0 z-40">
-        <h1 className="text-xl font-bold text-blue-500">MemeUni</h1>
-        <span className="text-sm font-medium">{user?.username}</span>
-      </header>
+      <Navbar />   {/* ✅ Use the Navbar (it already includes upload & logout) */}
 
       <div className="pb-16">
         {renderTab()}

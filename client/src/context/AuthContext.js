@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, registerUser } from '../services/api';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { loginUser, registerUser, getUserProfile } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in (token exists) on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('userInfo');
     if (storedUser) {
@@ -33,8 +32,31 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('userInfo');
   };
 
+  // ✅ This is the function that keeps everything in sync
+  const refreshCurrentUser = useCallback(async () => {
+    if (!user?._id) return;
+    try {
+      const updated = await getUserProfile(user._id);
+      const newUser = { ...user, ...updated, token: user.token };
+      localStorage.setItem('userInfo', JSON.stringify(newUser));
+      setUser(newUser);
+    } catch (err) {
+      console.error('Failed to refresh user', err);
+    }
+  }, [user]);
+
   return (
-    <AuthContext.Provider value={{ user,setUser, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        setUser,
+        loading,
+        login,
+        register,
+        logout,
+        refreshCurrentUser,        // ← must be here
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

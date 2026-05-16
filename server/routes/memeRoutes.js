@@ -7,20 +7,22 @@ const {
     deleteMeme,
     toggleLike,
     getUserMemes,
-}= require('../controllers/memeController');
-const {protect} = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+} = require('../controllers/memeController');
+const { protect } = require('../middleware/authMiddleware');
+const { uploadSingle } = require('../middleware/uploadMiddleware');   // changed import
 const commentRoutes = require('./commentRoutes');
 
-router.get('/',getMemes);
-router.get('/:id',getMemeById);
-
-router.post('/',protect, upload.single('image'), createMeme);
-router.delete('/:id', protect, deleteMeme);
-router.put('/:id/like',protect , toggleLike);
-
-router.use('/:id/comments', commentRoutes);
-// Public route to get memes by user ID
+// Public routes
+router.get('/', getMemes);
 router.get('/user/:userId', getUserMemes);
+router.get('/:id', getMemeById);
 
-module.exports=router;
+// Protected routes
+router.post('/', protect, uploadSingle('image'), createMeme);          // changed usage
+router.delete('/:id', protect, deleteMeme);
+router.put('/:id/like', protect, toggleLike);
+
+// Nested comment routes
+router.use('/:id/comments', commentRoutes);
+
+module.exports = router;

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserMemes, updateProfile } from '../services/api';
 import MemeCard from '../components/MemeCard';
+import { FaArrowLeft, FaPlus } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
@@ -14,7 +15,10 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Memoized fetch function – depends on user ID
+  // New: view mode and selected meme index
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'feed'
+  const [selectedMemeIndex, setSelectedMemeIndex] = useState(0);
+
   const fetchUserMemes = useCallback(async () => {
     if (!user) return;
     try {
@@ -64,28 +68,41 @@ const ProfilePage = () => {
     }
   };
 
+  // Handle grid item click → switch to feed view, set index
+  const handleGridItemClick = (index) => {
+    setSelectedMemeIndex(index);
+    setViewMode('feed');
+  };
+
+  // Back to grid
+  const handleBackToGrid = () => {
+    setViewMode('grid');
+  };
+
   if (loading) return <div className="text-center mt-20 text-gray-500">Loading profile...</div>;
 
-  return (
-    <div className="pb-16">
-      {/* Profile header */}
-      <div className="bg-white p-4 mb-4">
-        <div className="flex items-center gap-6">
-          {/* Profile picture */}
-          <div className="relative">
-            <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center font-bold text-2xl overflow-hidden">
-              {user?.profilePic ? (
-                <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                user?.username?.[0]?.toUpperCase()
-              )}
-            </div>
+  // Profile header (reused in both views)
+  const ProfileHeader = () => (
+    <div className="bg-white rounded-2xl shadow-lg mx-4 mt-4 mb-4 overflow-hidden">
+      {/* Gradient banner */}
+      <div className="h-24 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+      <div className="px-5 pb-5 -mt-10">
+        <div className="flex items-end gap-4">
+          {/* Avatar */}
+          <div className="relative w-24 h-24 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center overflow-hidden shadow">
+            {user?.profilePic ? (
+              <img src={user.profilePic} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-4xl font-bold text-gray-500">
+                {user?.username?.[0]?.toUpperCase()}
+              </span>
+            )}
             {editing && (
               <button
                 onClick={() => fileInputRef.current.click()}
-                className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center"
+                className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow"
               >
-                +
+                <FaPlus />
               </button>
             )}
             <input
@@ -98,83 +115,123 @@ const ProfilePage = () => {
           </div>
 
           {/* Stats */}
-          <div className="flex gap-6">
+          <div className="flex gap-6 ml-4 mb-2">
             <div className="text-center">
-              <p className="font-bold">{memes.length}</p>
-              <p className="text-sm text-gray-500">Posts</p>
+              <p className="font-bold text-lg">{memes.length}</p>
+              <p className="text-xs text-gray-500">Posts</p>
             </div>
             <div className="text-center">
-              <p className="font-bold">0</p>
-              <p className="text-sm text-gray-500">Followers</p>
+              <p className="font-bold text-lg">{user?.followerCount || 0}</p>
+              <p className="text-xs text-gray-500">Followers</p>
             </div>
             <div className="text-center">
-              <p className="font-bold">0</p>
-              <p className="text-sm text-gray-500">Following</p>
+              <p className="font-bold text-lg">{user?.followingCount || 0}</p>
+              <p className="text-xs text-gray-500">Following</p>
             </div>
           </div>
         </div>
 
-        {/* Bio */}
-        <div className="mt-4">
-          <h2 className="font-semibold text-lg">{user?.username}</h2>
+        {/* Bio & actions */}
+        <div className="mt-3">
+          <h2 className="font-bold text-xl">{user?.username}</h2>
           {editing ? (
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="border rounded p-2 w-full mt-1 text-sm"
+              className="border rounded p-2 w-full mt-1 text-sm resize-none"
               rows="2"
               placeholder="Write a bio..."
             />
           ) : (
-            <p className="text-sm mt-1">{user?.bio || 'No bio yet.'}</p>
+            <p className="text-sm text-gray-700 mt-1">{user?.bio || 'No bio yet.'}</p>
           )}
         </div>
 
-        {/* Edit / Save buttons */}
-        {editing ? (
-          <div className="flex gap-2 mt-3">
+        <div className="mt-3">
+          {editing ? (
+            <div className="flex gap-2">
+              <button
+                onClick={handleProfileUpdate}
+                disabled={uploading}
+                className="bg-blue-500 text-white px-6 py-1.5 rounded-full text-sm font-semibold disabled:opacity-50"
+              >
+                {uploading ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={handleEditToggle}
+                className="border border-gray-300 px-6 py-1.5 rounded-full text-sm font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={handleProfileUpdate}
-              disabled={uploading}
-              className="bg-blue-500 text-white px-4 py-1 rounded text-sm font-semibold disabled:opacity-50"
+              onClick={handleEditToggle}
+              className="border border-gray-300 px-6 py-1.5 rounded-full text-sm font-semibold"
             >
-              {uploading ? 'Saving...' : 'Save'}
+              Edit Profile
             </button>
-            <button onClick={handleEditToggle} className="text-sm text-gray-500">
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleEditToggle}
-            className="mt-3 border border-gray-300 rounded px-4 py-1 text-sm font-semibold"
-          >
-            Edit Profile
-          </button>
-        )}
+          )}
+        </div>
       </div>
+    </div>
+  );
 
-      {/* Memes grid */}
-      <div className="px-2">
+  // Feed view (when a grid item is clicked)
+  if (viewMode === 'feed') {
+    return (
+      <div className="pb-16">
+        {/* Top bar with back button */}
+        <div className="flex items-center p-3 bg-white shadow sticky top-0 z-40">
+          <button onClick={handleBackToGrid} className="text-xl mr-4">
+            <FaArrowLeft />
+          </button>
+          <h2 className="font-bold text-lg">Posts</h2>
+        </div>
+
+        {/* Meme cards list */}
+        <div className="max-w-xl mx-auto">
+          {memes.map((meme, index) => (
+            <MemeCard
+              key={meme._id}
+              meme={meme}
+              showDelete={true}
+              onDelete={handleDeleteMeme}
+              deleteButtonPosition="top-right"
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Default grid view
+  return (
+    <div className="pb-16">
+      <ProfileHeader />
+
+      {/* Grid */}
+      <div className="px-4">
         {memes.length === 0 ? (
           <p className="text-center text-gray-500 mt-10">No memes yet. Upload your first meme!</p>
         ) : (
-          <div className="grid grid-cols-3 gap-1">
-            {memes.map((meme) => (
-              <div key={meme._id} className="aspect-square relative group">
+          <div className="grid grid-cols-3 gap-1.5">
+            {memes.map((meme, index) => (
+              <div
+                key={meme._id}
+                className="aspect-square relative group cursor-pointer"
+                onClick={() => handleGridItemClick(index)}
+              >
                 <img
                   src={meme.imageUrl}
                   alt="Meme"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded"
                 />
-                {/* Overlay with delete button (visible on hover) */}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MemeCard
-                    meme={meme}
-                    showDelete={true}
-                    onDelete={handleDeleteMeme}
-                    compact={true}
-                  />
+                {/* Subtle overlay on hover */}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded">
+                  <span className="text-white font-semibold">
+                    View
+                  </span>
                 </div>
               </div>
             ))}

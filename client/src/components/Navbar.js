@@ -10,7 +10,7 @@ const Navbar = () => {
       <div className="flex items-center gap-4">
         <Link to="/upload" className="bg-blue-500 text-white px-3 py-1 rounded">Upload</Link>
         <span className="font-medium">{user?.username}</span>
-        <button onClick={logout} className="text-red-500">Logout</button>
+        <button onClick={logout} className="text-red-500 bg-yellow-300 p-2">Logout</button>
       </div>
     </nav>
   );

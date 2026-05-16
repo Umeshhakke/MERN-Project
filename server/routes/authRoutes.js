@@ -1,25 +1,27 @@
 const express = require('express');
 const router = express.Router();
 
-const{
+const {
     registerUser,
     loginUser,
     getUserProfile,
     updateUserProfile,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const { uploadSingle } = require('../middleware/uploadMiddleware');   // destructure
 
 // public routes
+router.post('/register', registerUser);
+router.post('/login', loginUser);
 
-router.post('/register',registerUser);
-router.post('/login',loginUser);
-router.get('/profile',protect,getUserProfile);
+// protected routes
+router.get('/profile', protect, getUserProfile);
+
 router.put(
     '/profile',
     protect,
-    upload.single('profilePic'),
+    uploadSingle('profilePic'),    // pass the field name
     updateUserProfile
 );
 
-module.exports=router;
+module.exports = router;
