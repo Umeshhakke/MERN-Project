@@ -13,6 +13,7 @@ import MainLayout from './components/MainLayout';
 import UserProfilePage from './pages/UserProfilePage';
 
 import { SocketProvider } from './context/SocketContext';
+import './App.css';
 
 function App() {
   return (
